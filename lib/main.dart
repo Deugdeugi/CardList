@@ -75,10 +75,36 @@ class _CardListState extends State<CardList> {
   }
 
   void _removeItem(int index) {
-    setState(() {
-      items.removeAt(index);
-      _saveItems();
-    });
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('삭제 확인'),
+          content: const Text('정말로 이 리스트 항목을 삭제하시겠습니까?'),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('취소'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('삭제'),
+              onPressed: () {
+                setState(() {
+                  items.removeAt(index);
+                  _saveItems();
+                });
+                Navigator.of(context).pop();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('리스트 항목이 삭제되었습니다.')),
+                );
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void _removeAll() {
@@ -127,14 +153,21 @@ class _CardListState extends State<CardList> {
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
-                maxLines: null,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  labelText: '제목 입력',
+                ),
                 controller: titleController,
-                decoration: const InputDecoration(hintText: '제목 입력'),
               ),
+              const SizedBox(height: 30.0,),
               TextField(
-                maxLines: null,
+                minLines: 1,
+                maxLines: 8,
                 controller: detailsController,
-                decoration: const InputDecoration(hintText: '추가 정보 입력'),
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  labelText: '추가 정보 입력',
+                ),
               ),
             ],
           ),
