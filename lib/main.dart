@@ -1,7 +1,8 @@
+import 'package:cardlist/DetailPage.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-const numOfColumn = 3;
+const numOfColumn = 1;
 const List<Color> colors = [
   Color.fromARGB(255, 8, 196, 243),
   Color.fromARGB(255, 236, 228, 114),
@@ -114,8 +115,8 @@ class _CardListState extends State<CardList> {
   }
 
   void _editItem(int index) {
-    TextEditingController titleController = TextEditingController(text: '');
-    TextEditingController detailsController = TextEditingController(text: '');
+    TextEditingController titleController = TextEditingController(text: items[index]['title']);
+    TextEditingController detailsController = TextEditingController(text: items[index]['details']);
     
     showDialog(
       context: context,
@@ -189,41 +190,46 @@ class _CardListState extends State<CardList> {
               int itemIndex = startIndex + i;
               if (itemIndex < items.length) {
                 return Expanded(
-                  child: Card(
-                    margin: const EdgeInsets.all(10.0),
-                    color: colors.isNotEmpty ? colors[itemIndex % colors.length] : Colors.white,
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(items[itemIndex]['title']!, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                                    Text(items[itemIndex]['details']!, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 14)),
-                                  ],
-                                ),
-                              Row(
+                  child: GestureDetector(
+                    onTap: () { 
+                      Navigator.push( 
+                        context, 
+                        MaterialPageRoute(builder: (context) => DetailPage(item: items[itemIndex])), 
+                      ); 
+                    },
+                    child: Card(
+                      margin: const EdgeInsets.all(10.0),
+                      color: colors.isNotEmpty ? colors[itemIndex % colors.length] : Colors.white,
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Flexible(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  IconButton(
-                                    icon: const Icon(Icons.edit),
-                                    onPressed: () => _editItem(itemIndex),
-                                    tooltip: '항목 수정',
-                                  ),
-                                  IconButton(
-                                    icon: const Icon(Icons.delete),
-                                    onPressed: () => _removeItem(itemIndex),
-                                    tooltip: '항목 삭제',
-                                  ),
+                                  Text(items[itemIndex]['title']!, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                                  Text(items[itemIndex]['details']!, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 14)),
                                 ],
                               ),
-                            ],
-                          )
-                        ],
+                            ),
+                            Row(
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.edit),
+                                  onPressed: () => _editItem(itemIndex),
+                                  tooltip: '항목 수정',
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.delete),
+                                  onPressed: () => _removeItem(itemIndex),
+                                  tooltip: '항목 삭제',
+                                ),
+                              ],
+                            ),
+                          ],
+                        )
                       ),
                     ),
                   ),
