@@ -71,6 +71,7 @@ class _CardListState extends State<CardList> {
               TextButton(
                 child: const Text('취소'),
                 onPressed: () {
+                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
                   Navigator.of(context).pop();
                   tagController.dispose(); // 해제
                 },
@@ -78,12 +79,22 @@ class _CardListState extends State<CardList> {
               TextButton(
                 child: const Text('검색'),
                 onPressed: () {
-                  Navigator.of(context).pop();
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => SearchPage(tag: tagController.text)),
-                  );
-                  tagController.dispose(); // 해제
+                  if (tagController.text.isEmpty) {
+                    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('검색할 태그를 입력해 주세요.')),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                    Navigator.of(context).pop();
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) =>
+                              SearchPage(tag: tagController.text)),
+                    );
+                    tagController.dispose(); // 해제
+                  }
                 },
               ),
             ],
@@ -133,7 +144,7 @@ class _CardListState extends State<CardList> {
         builder: (BuildContext context) {
           return AlertDialog(
             title: const Text('삭제 확인'),
-            content: const Text('든 리스트 항목을 삭제하시겠습니까?'),
+            content: const Text('모든 리스트 항목을 삭제하시겠습니까?'),
             actions: <Widget>[
               TextButton(
                 child: const Text('취소'),
@@ -158,9 +169,11 @@ class _CardListState extends State<CardList> {
     }
 
     void editItem(int index) {
-      TextEditingController titleController = TextEditingController(text: itemProvider.items[index].title);
-      TextEditingController tagController = TextEditingController(text: itemProvider.items[index].kind);
-      
+      TextEditingController titleController =
+          TextEditingController(text: itemProvider.items[index].title);
+      TextEditingController tagController =
+          TextEditingController(text: itemProvider.items[index].kind);
+
       showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -176,7 +189,9 @@ class _CardListState extends State<CardList> {
                   ),
                   controller: titleController,
                 ),
-                const SizedBox(height: 30.0,),
+                const SizedBox(
+                  height: 30.0,
+                ),
                 TextField(
                   maxLength: 6,
                   controller: tagController,
@@ -200,8 +215,8 @@ class _CardListState extends State<CardList> {
                 child: const Text('수정'),
                 onPressed: () {
                   itemProvider.editItem(
-                    index: index, 
-                    title: titleController.text, 
+                    index: index,
+                    title: titleController.text,
                     kind: tagController.text,
                   );
                   Navigator.of(context).pop();
@@ -216,66 +231,83 @@ class _CardListState extends State<CardList> {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('할 일 리스트', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: searchItem,
-            tooltip: '태그 검색',
-          ),
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: addItem,
-            tooltip: '항목 추가',
-          ),
-          IconButton(
-            icon: const Icon(Icons.delete),
-            onPressed: () => removeAll(),
-            tooltip: '전체 항목 삭제',
-          ),
-        ],
-      ),
-      body: ReorderableListView(
-        onReorder: (oldIndex, newIndex) {
-          if (newIndex > oldIndex) newIndex--;
-          final item = itemProvider.removeItem(oldIndex);
-          itemProvider.insertItem(newIndex, item);
-        },
-        children: List.generate(itemProvider.items.length, (index) {
-          return Card(
-            key: ValueKey(itemProvider.items[index]), // Unique key for each item
-            margin: const EdgeInsets.all(10.0),
-            color: Color(int.parse(itemProvider.items[index].color, radix: 16)),
-            child: ListTile(
-              title: Text(itemProvider.items[index].title, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              leading: Text(itemProvider.items[index].kind, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-              subtitle: Text(itemProvider.items[index].details, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 14)),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => DetailPage(item: itemProvider.items[index], itemIndex: index)),
-                );
-              },
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.edit),
-                    onPressed: () => editItem(index),
-                    tooltip: '항목 수정',
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.delete),
-                    onPressed: () => removeItem(index),
-                    tooltip: '항목 삭제',
-                  ),
-                ],
-              ),
+        appBar: AppBar(
+          title: const Text('할 일 리스트',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.search),
+              onPressed: searchItem,
+              tooltip: '태그 검색',
             ),
-          );
-        }),
-      ),
-    );
+            IconButton(
+              icon: const Icon(Icons.add),
+              onPressed: addItem,
+              tooltip: '항목 추가',
+            ),
+            IconButton(
+              icon: const Icon(Icons.delete),
+              onPressed: () => removeAll(),
+              tooltip: '전체 항목 삭제',
+            ),
+          ],
+        ),
+        body: itemProvider.items.isNotEmpty
+            ? ReorderableListView(
+                onReorder: (oldIndex, newIndex) {
+                  if (newIndex > oldIndex) newIndex--;
+                  final item = itemProvider.removeItem(oldIndex);
+                  itemProvider.insertItem(newIndex, item);
+                },
+                children: List.generate(itemProvider.items.length, (index) {
+                  return Card(
+                    key: ValueKey(
+                        itemProvider.items[index]), // Unique key for each item
+                    margin: const EdgeInsets.all(10.0),
+                    color: Color(
+                        int.parse(itemProvider.items[index].color, radix: 16)),
+                    child: ListTile(
+                      title: Text(itemProvider.items[index].title,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold)),
+                      leading: Text(itemProvider.items[index].kind,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                              fontSize: 14, fontWeight: FontWeight.bold)),
+                      subtitle: Text(itemProvider.items[index].details,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontSize: 14)),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => DetailPage(
+                                  item: itemProvider.items[index],
+                                  itemIndex: index)),
+                        );
+                      },
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.edit),
+                            onPressed: () => editItem(index),
+                            tooltip: '항목 수정',
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.delete),
+                            onPressed: () => removeItem(index),
+                            tooltip: '항목 삭제',
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }),
+              )
+            : const Center(
+                child: Text("리스트 항목이 없습니다."),
+              ));
   }
 }
