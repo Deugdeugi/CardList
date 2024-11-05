@@ -29,7 +29,15 @@ class ItemProvider with ChangeNotifier {
     if (savedItems != null) {
       _items = savedItems.map((item) {
         final parts = item.split('|');
-        return Item(title: parts[0], details: parts.length > 1 ? parts[1] : '', color: parts.length > 2 ? parts[2] : 'FFFFFFFF');
+
+        print(parts);
+
+        return Item(
+          title: parts[0], 
+          details: parts.length > 1 ? parts[1] : '', 
+          color: parts.length > 2 ? parts[2] : 'FFFFFFFF',
+          kind: parts.length > 3 ? parts[3] : '미분류'
+        );
       }).toList();
     }
     notifyListeners();
@@ -37,12 +45,12 @@ class ItemProvider with ChangeNotifier {
 
   Future<void> saveItems() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    List<String> savedItems = _items.map((item) => '${item.title}|${item.details}|${item.color}').toList();
+    List<String> savedItems = _items.map((item) => '${item.title}|${item.details}|${item.color}|${item.kind}').toList();
     prefs.setStringList('items', savedItems);
   }
 
   void addItem() {
-    _items.add(Item(title: '새 항목', details: '추가 정보', color: getRandomColor(colors)));
+    _items.add(Item(title: '새 항목', details: '추가 정보', color: getRandomColor(colors), kind: '미분류'));
     saveItems();
     notifyListeners();
   }
@@ -61,9 +69,10 @@ class ItemProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void editItem(int index, String title, String details) {
+  void editItem({required int index, required String title, String? kind, String? details}) {
     _items[index].title = title;
-    _items[index].details = details;
+    if (kind != null) _items[index].kind = kind;
+    if (details != null) _items[index].details = details;
     saveItems();
     notifyListeners();
   }

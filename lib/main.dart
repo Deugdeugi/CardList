@@ -112,7 +112,7 @@ class _CardListState extends State<CardList> {
 
     void editItem(int index) {
       TextEditingController titleController = TextEditingController(text: itemProvider.items[index].title);
-      TextEditingController detailsController = TextEditingController(text: itemProvider.items[index].details);
+      TextEditingController tagController = TextEditingController(text: itemProvider.items[index].kind);
       
       showDialog(
         context: context,
@@ -131,12 +131,11 @@ class _CardListState extends State<CardList> {
                 ),
                 const SizedBox(height: 30.0,),
                 TextField(
-                  minLines: 1,
-                  maxLines: 8,
-                  controller: detailsController,
+                  maxLength: 6,
+                  controller: tagController,
                   decoration: const InputDecoration(
                     border: OutlineInputBorder(),
-                    labelText: '추가 정보 입력',
+                    labelText: '태그 입력',
                   ),
                 ),
               ],
@@ -147,16 +146,20 @@ class _CardListState extends State<CardList> {
                 onPressed: () {
                   Navigator.of(context).pop();
                   titleController.dispose(); // 해제
-                  detailsController.dispose(); // 해제
+                  tagController.dispose(); // 해제
                 },
               ),
               TextButton(
                 child: const Text('수정'),
                 onPressed: () {
-                  itemProvider.editItem(index, titleController.text, detailsController.text);
+                  itemProvider.editItem(
+                    index: index, 
+                    title: titleController.text, 
+                    kind: tagController.text,
+                  );
                   Navigator.of(context).pop();
                   titleController.dispose(); // 해제
-                  detailsController.dispose(); // 해제
+                  tagController.dispose(); // 해제
                 },
               ),
             ],
@@ -194,6 +197,7 @@ class _CardListState extends State<CardList> {
             color: Color(int.parse(itemProvider.items[index].color, radix: 16)),
             child: ListTile(
               title: Text(itemProvider.items[index].title, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              leading: Text(itemProvider.items[index].kind, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
               subtitle: Text(itemProvider.items[index].details, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 14)),
               onTap: () {
                 Navigator.push(

@@ -47,7 +47,11 @@ class _DetailPageState extends State<DetailPage> {
             onPressed: () {
               if (_isEditing) {
                 // 아이템 업데이트
-                itemProvider.editItem(widget.itemIndex, _titleController.text, _detailsController.text);
+                itemProvider.editItem(
+                    index: widget.itemIndex,
+                    title: _titleController.text, 
+                    details: _detailsController.text,
+                  );
               }
               setState(() {
                 _isEditing = !_isEditing; // 수정 모드 전환
