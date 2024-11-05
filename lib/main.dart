@@ -4,15 +4,6 @@ import 'package:provider/provider.dart';
 import 'provider/item_provider.dart';
 
 const numOfColumn = 1;
-const List<Color> colors = [
-  Color.fromARGB(255, 8, 196, 243),
-  Color.fromARGB(255, 236, 228, 114),
-  Color.fromARGB(255, 140, 243, 23),
-  Color.fromARGB(255, 209, 136, 238),
-  Color.fromARGB(255, 233, 81, 119),
-  Color.fromARGB(255, 223, 92, 201),
-  Color.fromARGB(255, 76, 238, 162),
-];
 
 void main() {
   runApp(
@@ -76,10 +67,7 @@ class _CardListState extends State<CardList> {
               TextButton(
                 child: const Text('삭제'),
                 onPressed: () {
-                  setState(() {
-                    itemProvider.removeItem(index);
-                    saveItems();
-                  });
+                  itemProvider.removeItem(index);
                   Navigator.of(context).pop();
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('리스트 항목이 삭제되었습니다.')),
@@ -109,10 +97,7 @@ class _CardListState extends State<CardList> {
               TextButton(
                 child: const Text('삭제'),
                 onPressed: () {
-                  setState(() {
-                    itemProvider.clearItems();
-                    saveItems();
-                  });
+                  itemProvider.clearItems();
                   Navigator.of(context).pop();
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('모든 리스트 항목이 삭제되었습니다.')),
@@ -196,67 +181,73 @@ class _CardListState extends State<CardList> {
           ),
         ],
       ),
-      body: ListView.builder(
-        itemCount: (itemProvider.items.length / numOfColumn).ceil(),
-        itemBuilder: (context, index) {
-          int startIndex = index * numOfColumn;
-          return Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: List.generate(numOfColumn, (i) {
-              int itemIndex = startIndex + i;
-              if (itemIndex < itemProvider.items.length) {
-                return Expanded(
-                  child: GestureDetector(
-                    onTap: () { 
-                      Navigator.push( 
-                        context, 
-                        MaterialPageRoute(builder: (context) => DetailPage(item: itemProvider.items[itemIndex], itemIndex: itemIndex)), 
-                      ); 
-                    },
-                    child: Card(
-                      margin: const EdgeInsets.all(10.0),
-                      color: colors.isNotEmpty ? colors[itemIndex % colors.length] : Colors.white,
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Flexible(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(itemProvider.items[itemIndex].title, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                                  Text(itemProvider.items[itemIndex].details, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 14)),
-                                ],
-                              ),
-                            ),
-                            Row(
-                              children: [
-                                IconButton(
-                                  icon: const Icon(Icons.edit),
-                                  onPressed: () => editItem(itemIndex),
-                                  tooltip: '항목 수정',
-                                ),
-                                IconButton(
-                                  icon: const Icon(Icons.delete),
-                                  onPressed: () => removeItem(itemIndex),
-                                  tooltip: '항목 삭제',
-                                ),
-                              ],
-                            ),
-                          ],
-                        )
-                      ),
-                    ),
-                  ),
-                );
-              } else {
-                return Expanded(child: Container());
-              }
-            }),
-          );
+      body: ReorderableListView(
+        onReorder: (oldIndex, newIndex) {
+          if (newIndex > oldIndex) newIndex--;
+          final item = itemProvider.removeItem(oldIndex);
+          itemProvider.insertItem(newIndex, item);
         },
-      ),
+        children: List.generate(itemProvider.items.length, (index) {
+          return LongPressDraggable(
+            key: ValueKey(itemProvider.items[index]), // Unique key for each item
+            data: itemProvider.items[index],
+            feedback: Material(
+              child: Card(
+                color: Color(int.parse(itemProvider.items[index].color, radix: 16)),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Text(itemProvider.items[index].title),
+                ),
+              ),
+            ),
+            childWhenDragging: Container(), // Placeholder while dragging
+            child: GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => DetailPage(item: itemProvider.items[index], itemIndex: index)),
+                );
+              },
+              child: Card(
+                margin: const EdgeInsets.all(10.0),
+                color: Color(int.parse(itemProvider.items[index].color, radix: 16)),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Flexible(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(itemProvider.items[index].title, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                            Text(itemProvider.items[index].details, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 14)),
+                          ],
+                        ),
+                      ),
+                      Row(
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.edit),
+                            onPressed: () => editItem(index),
+                            tooltip: '항목 수정',
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.delete),
+                            onPressed: () => removeItem(index),
+                            tooltip: '항목 삭제',
+                          ),
+                          const SizedBox(width: 10,)
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
+        }),
+      )
     );
   }
 }
