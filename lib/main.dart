@@ -188,66 +188,38 @@ class _CardListState extends State<CardList> {
           itemProvider.insertItem(newIndex, item);
         },
         children: List.generate(itemProvider.items.length, (index) {
-          return LongPressDraggable(
+          return Card(
             key: ValueKey(itemProvider.items[index]), // Unique key for each item
-            data: itemProvider.items[index],
-            feedback: Material(
-              child: Card(
-                color: Color(int.parse(itemProvider.items[index].color, radix: 16)),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Text(itemProvider.items[index].title),
-                ),
-              ),
-            ),
-            childWhenDragging: Container(), // Placeholder while dragging
-            child: GestureDetector(
+            margin: const EdgeInsets.all(10.0),
+            color: Color(int.parse(itemProvider.items[index].color, radix: 16)),
+            child: ListTile(
+              title: Text(itemProvider.items[index].title, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              subtitle: Text(itemProvider.items[index].details, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 14)),
               onTap: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => DetailPage(item: itemProvider.items[index], itemIndex: index)),
                 );
               },
-              child: Card(
-                margin: const EdgeInsets.all(10.0),
-                color: Color(int.parse(itemProvider.items[index].color, radix: 16)),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Flexible(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(itemProvider.items[index].title, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                            Text(itemProvider.items[index].details, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 14)),
-                          ],
-                        ),
-                      ),
-                      Row(
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.edit),
-                            onPressed: () => editItem(index),
-                            tooltip: '항목 수정',
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.delete),
-                            onPressed: () => removeItem(index),
-                            tooltip: '항목 삭제',
-                          ),
-                          const SizedBox(width: 10,)
-                        ],
-                      ),
-                    ],
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.edit),
+                    onPressed: () => editItem(index),
+                    tooltip: '항목 수정',
                   ),
-                ),
+                  IconButton(
+                    icon: const Icon(Icons.delete),
+                    onPressed: () => removeItem(index),
+                    tooltip: '항목 삭제',
+                  ),
+                ],
               ),
             ),
           );
         }),
-      )
+      ),
     );
   }
 }
