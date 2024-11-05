@@ -2,6 +2,7 @@ import 'package:cardlist/detail_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'provider/item_provider.dart';
+import 'search_page.dart';
 
 const numOfColumn = 1;
 
@@ -45,6 +46,52 @@ class _CardListState extends State<CardList> {
       itemProvider.saveItems();
     }
 
+    void searchItem() {
+      TextEditingController tagController = TextEditingController(text: '');
+
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('태그 검색'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  maxLength: 6,
+                  controller: tagController,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    labelText: '태그 입력',
+                  ),
+                ),
+              ],
+            ),
+            actions: <Widget>[
+              TextButton(
+                child: const Text('취소'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  tagController.dispose(); // 해제
+                },
+              ),
+              TextButton(
+                child: const Text('검색'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => SearchPage(tag: tagController.text)),
+                  );
+                  tagController.dispose(); // 해제
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
+
     void addItem() {
       itemProvider.addItem();
       saveItems();
@@ -86,7 +133,7 @@ class _CardListState extends State<CardList> {
         builder: (BuildContext context) {
           return AlertDialog(
             title: const Text('삭제 확인'),
-            content: const Text('정말로 모든 리스트 항목을 삭제하시겠습니까?'),
+            content: const Text('든 리스트 항목을 삭제하시겠습니까?'),
             actions: <Widget>[
               TextButton(
                 child: const Text('취소'),
@@ -172,6 +219,11 @@ class _CardListState extends State<CardList> {
       appBar: AppBar(
         title: const Text('할 일 리스트', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.search),
+            onPressed: searchItem,
+            tooltip: '태그 검색',
+          ),
           IconButton(
             icon: const Icon(Icons.add),
             onPressed: addItem,

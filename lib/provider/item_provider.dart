@@ -30,8 +30,6 @@ class ItemProvider with ChangeNotifier {
       _items = savedItems.map((item) {
         final parts = item.split('|');
 
-        print(parts);
-
         return Item(
           title: parts[0], 
           details: parts.length > 1 ? parts[1] : '', 
