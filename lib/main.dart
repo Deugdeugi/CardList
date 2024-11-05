@@ -1,4 +1,4 @@
-import 'package:cardlist/DetailPage.dart';
+import 'package:cardlist/detail_page.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -36,7 +36,7 @@ class CardList extends StatefulWidget {
   const CardList({super.key});
 
   @override
-  _CardListState createState() => _CardListState();
+  State<CardList> createState() => _CardListState();
 }
 
 class _CardListState extends State<CardList> {
