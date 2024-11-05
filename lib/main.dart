@@ -126,8 +126,8 @@ class _CardListState extends State<CardList> {
     }
 
     void editItem(int index) {
-      TextEditingController titleController = TextEditingController(text: /*items[index]['title']*/'');
-      TextEditingController detailsController = TextEditingController(text: /*items[index]['details']*/'');
+      TextEditingController titleController = TextEditingController(text: itemProvider.items[index].title);
+      TextEditingController detailsController = TextEditingController(text: itemProvider.items[index].details);
       
       showDialog(
         context: context,
@@ -161,6 +161,8 @@ class _CardListState extends State<CardList> {
                 child: const Text('취소'),
                 onPressed: () {
                   Navigator.of(context).pop();
+                  titleController.dispose(); // 해제
+                  detailsController.dispose(); // 해제
                 },
               ),
               TextButton(
@@ -168,6 +170,8 @@ class _CardListState extends State<CardList> {
                 onPressed: () {
                   itemProvider.editItem(index, titleController.text, detailsController.text);
                   Navigator.of(context).pop();
+                  titleController.dispose(); // 해제
+                  detailsController.dispose(); // 해제
                 },
               ),
             ],
@@ -206,7 +210,7 @@ class _CardListState extends State<CardList> {
                     onTap: () { 
                       Navigator.push( 
                         context, 
-                        MaterialPageRoute(builder: (context) => DetailPage(item: itemProvider.items[itemIndex])), 
+                        MaterialPageRoute(builder: (context) => DetailPage(item: itemProvider.items[itemIndex], itemIndex: itemIndex)), 
                       ); 
                     },
                     child: Card(
