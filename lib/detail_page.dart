@@ -1,9 +1,10 @@
+import 'package:cardlist/provider/item_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_linkify/flutter_linkify.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class DetailPage extends StatelessWidget {
-  final Map<String, String> item;
+  final Item item;
 
   const DetailPage({super.key, required this.item});
 
@@ -20,7 +21,7 @@ class DetailPage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(item['title'] ?? '', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+              Text(item.title, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
               const SizedBox(height: 10),
               Linkify(
                 onOpen: (link) async {
@@ -28,7 +29,7 @@ class DetailPage extends StatelessWidget {
                     throw Exception('Could not launch ${link.url}');
                   }
                 },
-                text: item['details'] ?? '',
+                text: item.details,
                 style: const TextStyle(fontSize: 18),
                 linkStyle: const TextStyle(color: Colors.blueAccent),
               )

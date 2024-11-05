@@ -1,6 +1,7 @@
 import 'package:cardlist/detail_page.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
+import 'provider/item_provider.dart';
 
 const numOfColumn = 1;
 const List<Color> colors = [
@@ -14,7 +15,12 @@ const List<Color> colors = [
 ];
 
 void main() {
-  runApp(const CardListApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => ItemProvider()..loadItems(),
+      child: const CardListApp(),
+    ),
+  );
 }
 
 class CardListApp extends StatelessWidget {
@@ -40,194 +46,167 @@ class CardList extends StatefulWidget {
 }
 
 class _CardListState extends State<CardList> {
-  List<Map<String, String>> items = [];
-
-  @override
-  void initState() {
-    super.initState();
-    _loadItems();
-  }
-
-  Future<void> _loadItems() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      List<String>? savedItems = prefs.getStringList('items');
-      if (savedItems != null) {
-        items = savedItems.map((item) {
-          final parts = item.split('|');
-          return {'title': parts[0], 'details': parts.length > 1 ? parts[1] : ''};
-        }).toList();
-      }
-    });
-  }
-
-  Future<void> _saveItems() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    List<String> savedItems = items.map((item) => '${item['title']}|${item['details']}').toList();
-    prefs.setStringList('items', savedItems);
-  }
-
-  void _addItem() {
-    setState(() {
-      items.add({'title': '새 항목', 'details': '추가 정보'});
-      _saveItems();
-    });
-  }
-
-  void _removeItem(int index) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('삭제 확인'),
-          content: const Text('정말로 이 리스트 항목을 삭제하시겠습니까?'),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('취소'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            TextButton(
-              child: const Text('삭제'),
-              onPressed: () {
-                setState(() {
-                  items.removeAt(index);
-                  _saveItems();
-                });
-                Navigator.of(context).pop();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('리스트 항목이 삭제되었습니다.')),
-                );
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void _removeAll() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('삭제 확인'),
-          content: const Text('정말로 모든 리스트 항목을 삭제하시겠습니까?'),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('취소'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            TextButton(
-              child: const Text('삭제'),
-              onPressed: () {
-                setState(() {
-                  items.clear();
-                  _saveItems();
-                });
-                Navigator.of(context).pop();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('모든 리스트 항목이 삭제되었습니다.')),
-                );
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void _editItem(int index) {
-    TextEditingController titleController = TextEditingController(text: items[index]['title']);
-    TextEditingController detailsController = TextEditingController(text: items[index]['details']);
-    
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('항목 수정'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: '제목 입력',
-                ),
-                controller: titleController,
-              ),
-              const SizedBox(height: 30.0,),
-              TextField(
-                minLines: 1,
-                maxLines: 8,
-                controller: detailsController,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: '추가 정보 입력',
-                ),
-              ),
-            ],
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('취소'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            TextButton(
-              child: const Text('수정'),
-              onPressed: () {
-                setState(() {
-                  items[index]['title'] = titleController.text;
-                  items[index]['details'] = detailsController.text;
-                  _saveItems();
-                });
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
+    final itemProvider = Provider.of<ItemProvider>(context);
+
+    void saveItems() {
+      itemProvider.saveItems();
+    }
+
+    void addItem() {
+      itemProvider.addItem();
+      saveItems();
+    }
+
+    void removeItem(int index) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('삭제 확인'),
+            content: const Text('정말로 이 리스트 항목을 삭제하시겠습니까?'),
+            actions: <Widget>[
+              TextButton(
+                child: const Text('취소'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+              TextButton(
+                child: const Text('삭제'),
+                onPressed: () {
+                  setState(() {
+                    itemProvider.removeItem(index);
+                    saveItems();
+                  });
+                  Navigator.of(context).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('리스트 항목이 삭제되었습니다.')),
+                  );
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
+
+    void removeAll() {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('삭제 확인'),
+            content: const Text('정말로 모든 리스트 항목을 삭제하시겠습니까?'),
+            actions: <Widget>[
+              TextButton(
+                child: const Text('취소'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+              TextButton(
+                child: const Text('삭제'),
+                onPressed: () {
+                  setState(() {
+                    itemProvider.clearItems();
+                    saveItems();
+                  });
+                  Navigator.of(context).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('모든 리스트 항목이 삭제되었습니다.')),
+                  );
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
+
+    void editItem(int index) {
+      TextEditingController titleController = TextEditingController(text: /*items[index]['title']*/'');
+      TextEditingController detailsController = TextEditingController(text: /*items[index]['details']*/'');
+      
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('항목 수정'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    labelText: '제목 입력',
+                  ),
+                  controller: titleController,
+                ),
+                const SizedBox(height: 30.0,),
+                TextField(
+                  minLines: 1,
+                  maxLines: 8,
+                  controller: detailsController,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    labelText: '추가 정보 입력',
+                  ),
+                ),
+              ],
+            ),
+            actions: <Widget>[
+              TextButton(
+                child: const Text('취소'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+              TextButton(
+                child: const Text('수정'),
+                onPressed: () {
+                  itemProvider.editItem(index, titleController.text, detailsController.text);
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('할 일 리스트', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
-            onPressed: _addItem,
+            onPressed: addItem,
             tooltip: '항목 추가',
           ),
           IconButton(
             icon: const Icon(Icons.delete),
-            onPressed: () => _removeAll(),
+            onPressed: () => removeAll(),
             tooltip: '전체 항목 삭제',
           ),
         ],
       ),
       body: ListView.builder(
-        itemCount: (items.length / numOfColumn).ceil(),
+        itemCount: (itemProvider.items.length / numOfColumn).ceil(),
         itemBuilder: (context, index) {
           int startIndex = index * numOfColumn;
           return Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: List.generate(numOfColumn, (i) {
               int itemIndex = startIndex + i;
-              if (itemIndex < items.length) {
+              if (itemIndex < itemProvider.items.length) {
                 return Expanded(
                   child: GestureDetector(
                     onTap: () { 
                       Navigator.push( 
                         context, 
-                        MaterialPageRoute(builder: (context) => DetailPage(item: items[itemIndex])), 
+                        MaterialPageRoute(builder: (context) => DetailPage(item: itemProvider.items[itemIndex])), 
                       ); 
                     },
                     child: Card(
@@ -242,8 +221,8 @@ class _CardListState extends State<CardList> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(items[itemIndex]['title']!, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                                  Text(items[itemIndex]['details']!, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 14)),
+                                  Text(itemProvider.items[itemIndex].title, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                                  Text(itemProvider.items[itemIndex].details, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 14)),
                                 ],
                               ),
                             ),
@@ -251,12 +230,12 @@ class _CardListState extends State<CardList> {
                               children: [
                                 IconButton(
                                   icon: const Icon(Icons.edit),
-                                  onPressed: () => _editItem(itemIndex),
+                                  onPressed: () => editItem(itemIndex),
                                   tooltip: '항목 수정',
                                 ),
                                 IconButton(
                                   icon: const Icon(Icons.delete),
-                                  onPressed: () => _removeItem(itemIndex),
+                                  onPressed: () => removeItem(itemIndex),
                                   tooltip: '항목 삭제',
                                 ),
                               ],
