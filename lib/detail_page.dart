@@ -87,8 +87,9 @@ class _DetailPageState extends State<DetailPage> {
                     )
                   : Linkify(
                       onOpen: (link) async {
-                        if (!await launchUrl(Uri.parse(link.url))) {
-                          throw Exception('Could not launch ${link.url}');
+                        if (!await launchUrl(Uri.parse(link.url), mode: LaunchMode.externalApplication)) {
+                          debugPrint('Could not launch ${link.url}');
+                          //throw Exception('Could not launch ${link.url}');
                         }
                       },
                       text: _detailsController.text,

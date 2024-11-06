@@ -119,6 +119,7 @@ class _CardListState extends State<CardList> {
               TextButton(
                 child: const Text('취소'),
                 onPressed: () {
+                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
                   Navigator.of(context).pop();
                 },
               ),
@@ -126,6 +127,7 @@ class _CardListState extends State<CardList> {
                 child: const Text('삭제'),
                 onPressed: () {
                   itemProvider.removeItem(index);
+                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
                   Navigator.of(context).pop();
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('리스트 항목이 삭제되었습니다.')),
@@ -149,6 +151,7 @@ class _CardListState extends State<CardList> {
               TextButton(
                 child: const Text('취소'),
                 onPressed: () {
+                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
                   Navigator.of(context).pop();
                 },
               ),
@@ -157,6 +160,7 @@ class _CardListState extends State<CardList> {
                 onPressed: () {
                   itemProvider.clearItems();
                   Navigator.of(context).pop();
+                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('모든 리스트 항목이 삭제되었습니다.')),
                   );
