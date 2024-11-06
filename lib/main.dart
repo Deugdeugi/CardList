@@ -247,6 +247,13 @@ class _CardListState extends State<CardList> {
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
           actions: [
             IconButton(
+              icon: const Icon(Icons.add),
+              onPressed: () {
+                addItem();
+              },
+              tooltip: '항목 추가',
+            ),
+            IconButton(
               icon: const Icon(Icons.menu),
               onPressed: () {
                 _scaffoldKey.currentState!.openEndDrawer();
@@ -277,14 +284,6 @@ class _CardListState extends State<CardList> {
                 onTap: () {
                   Navigator.of(context).pop(); // 드로어 닫기
                   searchItem();
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.add),
-                title: const Text('항목 추가'),
-                onTap: () {
-                  Navigator.of(context).pop(); // 드로어 닫기
-                  addItem();
                 },
               ),
               ListTile(
