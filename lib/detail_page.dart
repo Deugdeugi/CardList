@@ -44,6 +44,7 @@ class _DetailPageState extends State<DetailPage> {
         actions: [
           IconButton(
             icon: Icon(_isEditing ? Icons.save : Icons.edit),
+            tooltip: _isEditing ? '저장' : '수정',
             onPressed: () {
               if (_isEditing) {
                 // 아이템 업데이트
@@ -52,6 +53,10 @@ class _DetailPageState extends State<DetailPage> {
                     title: _titleController.text, 
                     details: _detailsController.text,
                   );
+                ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('리스트 항목이 수정되었습니다.')),
+                );
               }
               setState(() {
                 _isEditing = !_isEditing; // 수정 모드 전환

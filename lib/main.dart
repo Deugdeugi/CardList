@@ -106,6 +106,10 @@ class _CardListState extends State<CardList> {
     void addItem() {
       itemProvider.addItem();
       saveItems();
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('리스트 항목이 추가되었습니다.')),
+      );
     }
 
     void removeItem(int index) {
