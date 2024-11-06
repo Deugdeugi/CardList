@@ -38,6 +38,8 @@ class CardList extends StatefulWidget {
 }
 
 class _CardListState extends State<CardList> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
   @override
   Widget build(BuildContext context) {
     final itemProvider = Provider.of<ItemProvider>(context);
@@ -239,26 +241,86 @@ class _CardListState extends State<CardList> {
     }
 
     return Scaffold(
+        key: _scaffoldKey,
         appBar: AppBar(
           title: const Text('할 일 리스트',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
           actions: [
             IconButton(
-              icon: const Icon(Icons.search),
-              onPressed: searchItem,
-              tooltip: '태그 검색',
-            ),
-            IconButton(
-              icon: const Icon(Icons.add),
-              onPressed: addItem,
-              tooltip: '항목 추가',
-            ),
-            IconButton(
-              icon: const Icon(Icons.delete),
-              onPressed: () => removeAll(),
-              tooltip: '전체 항목 삭제',
+              icon: const Icon(Icons.menu),
+              onPressed: () {
+                _scaffoldKey.currentState!.openEndDrawer();
+              },
+              tooltip: '메뉴 열기',
             ),
           ],
+        ),
+        endDrawer: Drawer(
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: <Widget>[
+              const DrawerHeader(
+                decoration: BoxDecoration(
+                  color: Colors.blue,
+                ),
+                child: Text(
+                  '메뉴',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                  ),
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.search),
+                title: const Text('태그 검색'),
+                onTap: () {
+                  Navigator.of(context).pop(); // 드로어 닫기
+                  searchItem();
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.add),
+                title: const Text('항목 추가'),
+                onTap: () {
+                  Navigator.of(context).pop(); // 드로어 닫기
+                  addItem();
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.delete),
+                title: const Text('전체 항목 삭제'),
+                onTap: () {
+                  Navigator.of(context).pop(); // 드로어 닫기
+                  removeAll();
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.backup),
+                title: const Text('리스트 항목 백업'),
+                onTap: () {
+                  Navigator.of(context).pop(); // 드로어 닫기
+                  itemProvider.backupSharedPreferences();
+                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('백업이 완료되었습니다.')),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.restore),
+                title: const Text('백업한 리스트 항목 불러오기'),
+                onTap: () {
+                  Navigator.of(context).pop(); // 드로어 닫기
+                  itemProvider.restoreSharedPreferences();
+                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('리스트 항목 불러오기가 완료되었습니다.')),
+                  );
+                },
+              ),
+            ],
+          ),
         ),
         body: itemProvider.items.isNotEmpty
             ? ReorderableListView(

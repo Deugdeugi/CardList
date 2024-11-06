@@ -1,6 +1,8 @@
+import 'dart:convert';
+import 'dart:io';
 import 'dart:math';
-
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'item_model.dart';
 
@@ -79,5 +81,32 @@ class ItemProvider with ChangeNotifier {
     _items.insert(newIndex, item);
     saveItems();
     notifyListeners();
+  }
+
+  Future<void> backupSharedPreferences() async {
+      final prefs = await SharedPreferences.getInstance();
+      final data = Map<String, dynamic>.fromEntries(
+        prefs.getKeys().map((key) => MapEntry(key, prefs.get(key))),
+      );
+      final jsonString = jsonEncode(data);
+
+      final directory = await getApplicationDocumentsDirectory();
+      final file = File('${directory.path}/backup.json');
+      await file.writeAsString(jsonString);
+    }
+
+    Future<void> restoreSharedPreferences() async {
+      final directory = await getApplicationDocumentsDirectory();
+      final file = File('${directory.path}/backup.json');
+
+      if (await file.exists()) {
+        final jsonString = await file.readAsString();
+        final Map<String, dynamic> data = jsonDecode(jsonString);
+        final prefs = await SharedPreferences.getInstance();
+        List<String> restoreItems = List<String>.from(data['items']);
+
+        prefs.setStringList('items', restoreItems);
+        await loadItems();
+      }
   }
 }

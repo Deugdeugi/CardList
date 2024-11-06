@@ -78,10 +78,17 @@ class _DetailPageState extends State<DetailPage> {
                       style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                       decoration: const InputDecoration(labelText: '제목', border: OutlineInputBorder()),
                     )
-                  : Text(
-                      _titleController.text,
-                      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                    ),
+                  : GestureDetector(
+                    onTap: () {
+                        setState(() {
+                          _isEditing = !_isEditing; // 수정 모드 전환
+                        });
+                      },
+                    child: Text(
+                        _titleController.text,
+                        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                      ),
+                  ),
               const SizedBox(height: 10),
               _isEditing
                   ? TextField(
@@ -90,17 +97,24 @@ class _DetailPageState extends State<DetailPage> {
                       style: const TextStyle(fontSize: 18),
                       decoration: const InputDecoration(labelText: '상세 내용', border: OutlineInputBorder()),
                     )
-                  : Linkify(
-                      onOpen: (link) async {
-                        if (!await launchUrl(Uri.parse(link.url), mode: LaunchMode.externalApplication)) {
-                          debugPrint('Could not launch ${link.url}');
-                          //throw Exception('Could not launch ${link.url}');
-                        }
+                  : GestureDetector(
+                    onTap: () {
+                        setState(() {
+                          _isEditing = !_isEditing; // 수정 모드 전환
+                        });
                       },
-                      text: _detailsController.text,
-                      style: const TextStyle(fontSize: 18),
-                      linkStyle: const TextStyle(color: Colors.blueAccent),
-                    ),
+                    child: Linkify(
+                        onOpen: (link) async {
+                          if (!await launchUrl(Uri.parse(link.url), mode: LaunchMode.externalApplication)) {
+                            debugPrint('Could not launch ${link.url}');
+                            //throw Exception('Could not launch ${link.url}');
+                          }
+                        },
+                        text: _detailsController.text,
+                        style: const TextStyle(fontSize: 18),
+                        linkStyle: const TextStyle(color: Colors.blueAccent),
+                      ),
+                  ),
             ],
           ),
         ),
